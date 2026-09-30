@@ -2,7 +2,7 @@ name: 꼴로르 L사이즈 재고 알림
 
 on:
   schedule:
-    - cron: "*/5 * * * *"
+    - cron: "*/30 * * * *"
   workflow_dispatch:
     inputs:
       test:
@@ -10,14 +10,18 @@ on:
         type: boolean
         default: false
 
+permissions:
+  actions: write
+  contents: read
+
 concurrency:
-  group: ccolore-monitor
+  group: ccolore-monitor-${{ inputs.test == true && 'test' || 'main' }}
   cancel-in-progress: false
 
 jobs:
   check:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 358
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -33,5 +37,10 @@ jobs:
           if [ "${{ inputs.test }}" = "true" ]; then
             python ccolore_monitor.py --test
           else
-            python ccolore_monitor.py --minutes 15
+            python ccolore_monitor.py --minutes 345
           fi
+      - name: 다음 감시 이어서 시작
+        if: ${{ !cancelled() && inputs.test != true }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run monitor.yml --ref ${{ github.ref_name }}
