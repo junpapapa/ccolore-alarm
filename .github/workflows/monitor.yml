@@ -28,6 +28,7 @@ jobs:
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          INTERVAL_SEC: "30"
         run: |
           if [ "${{ inputs.test }}" = "true" ]; then
             python ccolore_monitor.py --test
